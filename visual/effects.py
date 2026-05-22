@@ -50,9 +50,7 @@ class Dotted(Effect):
         x += 0.5 * sign(x)
         y += 0.5 * sign(y)
         dist = 2
-        # return ((math.sin(x*math.pi/2))**2 + math.sin(y*math.pi/2)**2)**0.5 <= 0.9
         circle = int(x / dist) * dist + 0.5 * sign(x), int(y / dist) * dist + 0.5 * sign(y)
-        # return math.dist((x, y), circle) <= 0.4
         return ((x-circle[0])**2 + (y-circle[1])**2) <= 0.4**2
 
 

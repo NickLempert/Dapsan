@@ -56,8 +56,6 @@ def test3():
                   Point(-UNITS_PER_IMAGE / 3, UNITS_PER_IMAGE / 3),
                   Point(UNITS_PER_IMAGE / 3, UNITS_PER_IMAGE / 3),
                   Point(UNITS_PER_IMAGE / 5, -UNITS_PER_IMAGE / 3)], ZigZag, Dotted, Transforms(rotation=0))
-    # shape = Mesh([Vertex(-UNITS_PER_IMAGE/3, UNITS_PER_IMAGE/3),
-    #               Vertex(UNITS_PER_IMAGE/3, UNITS_PER_IMAGE/3)], ZigZag, Dotted, Transforms(rotation=90))
     img = render(img, shape)
     return img
 

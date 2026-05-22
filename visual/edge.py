@@ -106,7 +106,6 @@ class Edge(Renderable):
 
         dist, offset = unit_to_px(2, offset, resolution=length)
         for x in range(b_x1, b_x2+1):
-            # yield (x, int(x*slope + offset))[::order]
             for v_y in range(-dist, dist+1):
                 pos = (x, int(x*slope + offset)+v_y)[::order]
                 if self.get_value(*px_to_unit(*pos, resolution=length)):

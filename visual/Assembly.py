@@ -1,14 +1,16 @@
 import math
-from typing import Iterator
+from typing import Iterator, Sequence
 
 from visual.renderable import Renderable, expand4
 from visual.shapes import Shape
+from visual.template_point import TemplatePoint
 
 
 class Assembly(Renderable):
 
-    def __init__(self, shapes: list[Shape]):
-        self.shapes = shapes
+    def __init__(self, points: Sequence[TemplatePoint]):
+        self.points = points
+        self.shapes = []
 
     @expand4
     def get_bounding_box(self) -> tuple[float, float, float, float]:
