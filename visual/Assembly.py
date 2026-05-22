@@ -8,9 +8,8 @@ from visual.template_point import TemplatePoint
 
 class Assembly(Renderable):
 
-    def __init__(self, points: Sequence[TemplatePoint]):
-        self.points = points
-        self.shapes = []
+    def __init__(self, shapes: Sequence[Shape]):
+        self.shapes = list(shapes)
 
     @expand4
     def get_bounding_box(self) -> tuple[float, float, float, float]:
