@@ -19,4 +19,8 @@ class Switch:
         """
         return point is self.target_point
 
-
+    def is_fair(self):
+        """
+        Returns whether the effects of the switch are clear.
+        """
+        raise NotImplementedError(f'{self.__class__} did not implement "is_fair".')
