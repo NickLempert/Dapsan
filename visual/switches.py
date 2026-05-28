@@ -16,7 +16,7 @@ class Redirect(Switch):
             redirect_towards = assembly_template.get_random_point(exclude=[target_point])
         self.redirect_towards = redirect_towards
 
-    def get_point(self):
+    def do_switch(self, point: TemplatePoint):
         return copy.deepcopy(self.redirect_towards)
 
     def related_to_point(self, point):
@@ -27,13 +27,13 @@ class Redirect(Switch):
 
 
 class RedirectKeepRotation(Redirect):
-    def get_point(self):
+    def do_switch(self, point: TemplatePoint):
         out = self.redirect_towards
         out.transforms[Rotation] = self.target_point.transforms[Rotation]
 
 
 class CopyRotation(Redirect):
-    def get_point(self):
+    def do_switch(self, point: TemplatePoint):
         out = self.target_point
         out.transforms[Rotation] = self.redirect_towards.transforms[Rotation]
 
@@ -42,7 +42,7 @@ class CopyRotation(Redirect):
 
 
 class RedirectKeepScale(Redirect):
-    def get_point(self):
+    def do_switch(self, point: TemplatePoint):
         out = self.redirect_towards
         out.transforms[Scale] = self.target_point.transforms[Scale]
 

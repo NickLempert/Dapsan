@@ -21,7 +21,7 @@ def attention_test(screen=pygame.display.set_mode((500, 500), pygame.RESIZABLE),
 
     clock = pygame.time.Clock()
 
-    while time.time() - start_time < 1 * 60:
+    while time.time() - start_time < 5 * 60:
         dt = time.time() - last_update
         last_update = time.time()
 

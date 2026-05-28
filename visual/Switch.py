@@ -1,4 +1,5 @@
 import copy
+from abc import abstractmethod
 
 from visual.template_point import TemplatePoint
 
@@ -9,7 +10,11 @@ class Switch:
         self.assembly_template = assembly_template
 
     def get_point(self):
-        return copy.deepcopy(self.target_point)
+        return self.do_switch(self.target_point)
+
+    @abstractmethod
+    def do_switch(self, point: TemplatePoint):
+        return copy.deepcopy(point)
 
     def related_to_point(self, point):
         """

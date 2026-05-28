@@ -20,7 +20,7 @@ class Transform:
 
 
 class Rotation(Transform):
-    increments = (30, 45, 90, 180)
+    increments = (-90, -45, -40, 30, 45, 90, 180)
 
     def __call__(self, x: float, y: float, inverse=False) -> tuple[float, float]:
         if abs(self.amount) <= 0.01:

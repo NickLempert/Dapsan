@@ -1,9 +1,13 @@
 import time
 
 from PIL import Image, ImageFilter
+
+from visual.Assembly import Assembly
+from visual.AssemblyTemplate import AssemblyTemplate
 from visual.effects import *
 from visual.renderable import Renderable
 from visual.shapes import Mesh, Circle
+from visual.template_point import TemplatePoint
 from visual.transforms import Rotation, Transforms
 from visual.util import *
 from visual.edge import Edge
@@ -67,8 +71,39 @@ def test4():
     return img
 
 
+def test5():
+    img = Image.new('RGB', (500, 500), (255, 255, 255))
+    circle = Circle(background=ZigZag,
+                    edge_type=Weird,
+                    transforms=Transforms(x_shift=UNITS_PER_IMAGE/2+UNITS_PER_IMAGE/4, scale=0.5))
+    square = Mesh([Point(-UNITS_PER_IMAGE / 5, -UNITS_PER_IMAGE / 5),
+                  Point(-UNITS_PER_IMAGE / 5, UNITS_PER_IMAGE / 5),
+                  Point(UNITS_PER_IMAGE / 5, UNITS_PER_IMAGE / 5),
+                  Point(UNITS_PER_IMAGE / 5, -UNITS_PER_IMAGE / 5)],
+                  Weird,
+                  Lined,
+                  Transforms(x_shift=UNITS_PER_IMAGE/2-UNITS_PER_IMAGE/4, rotation=0))
+    assembly = Assembly((circle, square))
+    img = render(img, assembly)
+    return img
+
+
+def test6():
+    img = Image.new('RGB', (500, 500), (255, 255, 255))
+    template = AssemblyTemplate([
+        TemplatePoint(Transforms(x_shift=UNITS_PER_IMAGE/2-UNITS_PER_IMAGE/4, scale=0.75)),
+        TemplatePoint(Transforms(x_shift=UNITS_PER_IMAGE/2+UNITS_PER_IMAGE/4, scale=0.75)),
+    ])
+    assembly = list(template.assemble())[0]
+    img = render(img, assembly)
+
+    return img
+
+
 if __name__ == '__main__':
     test1().show()
     test2().show()
     test3().show()
     test4().show()
+    test5().show()
+    test6().show()
