@@ -16,7 +16,10 @@ class Switch:
     def do_switch(self, point: TemplatePoint):
         return copy.deepcopy(point)
 
-    def related_to_point(self, point):
+    def is_point_targeted(self, point: TemplatePoint):
+        return point is self.target_point
+
+    def related_to_point(self, point: TemplatePoint):
         """
         Checks whether if the switch uses the point for get_point.
         For example, Redirect.related_to_point will return True if the given point is the target_point or the destination

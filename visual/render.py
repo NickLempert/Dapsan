@@ -2,6 +2,7 @@ import time
 
 from PIL import Image, ImageFilter
 
+from visual import switches
 from visual.Assembly import Assembly
 from visual.AssemblyTemplate import AssemblyTemplate
 from visual.effects import *
@@ -89,15 +90,18 @@ def test5():
 
 
 def test6():
-    img = Image.new('RGB', (500, 500), (255, 255, 255))
+
     template = AssemblyTemplate([
         TemplatePoint(Transforms(x_shift=UNITS_PER_IMAGE/2-UNITS_PER_IMAGE/4, scale=0.75)),
         TemplatePoint(Transforms(x_shift=UNITS_PER_IMAGE/2+UNITS_PER_IMAGE/4, scale=0.75)),
     ])
-    assembly = list(template.assemble())[0]
-    img = render(img, assembly)
-
-    return img
+    switch_set = [switches.Redirect(template.points[0], template), switches.Redirect(template.points[1], template)]
+    template.switch_sets.append(switch_set)
+    for assembly in template.assemble():
+        img = Image.new('RGB', (500, 500), (255, 255, 255))
+        img = render(img, assembly)
+        img.show()
+    # return img
 
 
 if __name__ == '__main__':
@@ -106,4 +110,4 @@ if __name__ == '__main__':
     test3().show()
     test4().show()
     test5().show()
-    test6().show()
+    test6()

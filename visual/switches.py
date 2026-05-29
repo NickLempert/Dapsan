@@ -28,14 +28,16 @@ class Redirect(Switch):
 
 class RedirectKeepRotation(Redirect):
     def do_switch(self, point: TemplatePoint):
-        out = self.redirect_towards
+        out = copy.deepcopy(self.redirect_towards)
         out.transforms[Rotation] = self.target_point.transforms[Rotation]
+        return out
 
 
 class CopyRotation(Redirect):
     def do_switch(self, point: TemplatePoint):
-        out = self.target_point
+        out = copy.deepcopy(self.target_point)
         out.transforms[Rotation] = self.redirect_towards.transforms[Rotation]
+        return out
 
     def is_fair(self):
         return abs(self.target_point.transforms[Rotation]-self.redirect_towards.transforms[Rotation]) >= 45
@@ -43,7 +45,8 @@ class CopyRotation(Redirect):
 
 class RedirectKeepScale(Redirect):
     def do_switch(self, point: TemplatePoint):
-        out = self.redirect_towards
+        out = copy.deepcopy(self.redirect_towards)
         out.transforms[Scale] = self.target_point.transforms[Scale]
+        return out
 
 
