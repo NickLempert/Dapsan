@@ -9,7 +9,7 @@ from visual.effects import *
 from visual.renderable import Renderable
 from visual.shapes import Mesh, Circle
 from visual.template_point import TemplatePoint
-from visual.transforms import Rotation, Transforms
+from visual.transforms import Rotation, Transforms, XShift, Scale, YShift
 from visual.util import *
 from visual.edge import Edge
 from visual.point import Point
@@ -103,10 +103,29 @@ def test6():
     # return img
 
 
+def test7():
+    img = Image.new('RGB', (500, 500), (255, 255, 255))
+    shape = Circle(background=Dotted, edge_type=ZigZag)
+    shape.transforms[XShift].amount += UNITS_PER_IMAGE/2.5
+    shape2 = Circle(background=Dotted, edge_type=ZigZag)
+    shape2.transforms[XShift].amount -= UNITS_PER_IMAGE/4
+    shape2.transforms[YShift].amount += UNITS_PER_IMAGE/4
+    shape2.transforms[Scale].amount /= 2
+    shape3 = Circle(background=Dotted, edge_type=ZigZag)
+    shape3.transforms[XShift].amount -= UNITS_PER_IMAGE/11
+    shape3.transforms[YShift].amount -= UNITS_PER_IMAGE/5
+    shape3.transforms[Scale].amount /= 3
+    img = render(img, shape)
+    img = render(img, shape2)
+    img = render(img, shape3)
+    return img
+
+
 if __name__ == '__main__':
-    # test1().show()
-    # test2().show()
-    # test3().show()
-    # test4().show()
-    # test5().show()
+    test1().show()
+    test2().show()
+    test3().show()
+    test4().show()
+    test5().show()
     test6()
+    # test7().show()
