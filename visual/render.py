@@ -90,7 +90,6 @@ def test5():
 
 
 def test6():
-
     template = AssemblyTemplate([
         TemplatePoint(Transforms(x_shift=UNITS_PER_IMAGE/2-UNITS_PER_IMAGE/4, scale=0.75)),
         TemplatePoint(Transforms(x_shift=UNITS_PER_IMAGE/2+UNITS_PER_IMAGE/4, scale=0.75)),
