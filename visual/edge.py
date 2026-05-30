@@ -8,10 +8,11 @@ from transforms import Rotation, Transform
 
 
 class Edge(Renderable):
-    def __init__(self, v1: Point, v2: Point, effect: Type[Effect] = Lined):
+    def __init__(self, v1: Point, v2: Point, effect: Type[Effect] = Lined, rounded=True):
         self.v1 = v1
         self.v2 = v2
         self.effect = effect
+        self.rounded = rounded
         self.refresh()
 
     def refresh(self):
@@ -75,11 +76,14 @@ class Edge(Renderable):
         b = x if m == math.inf else y - x * m
         intersection = self.intersects(m, b, valid=True, margin=1e-10)
         if intersection is None:
-            return False
+            if not self.rounded:
+                return False
+            distance = min(math.dist(self.v1, (x, y)), math.dist(self.v2, (x, y)))
+            # intersection = self.intersects(m, b, valid=False, margin=1e-10)
         else:
             distance = math.dist((x, y), (intersection.x, intersection.y))
         return distance <= 1 and self.effect.get_value(distance,
-                                                       math.dist((self.v1.x, self.v1.y), (x, y))
+                                                       math.dist(self.v1, (x, y))
                                                        # * sign(x - intersection.x + y - intersection.y))
                                                        * sign(x-self.offset()
                                                               if self.slope() == math.inf
@@ -103,7 +107,9 @@ class Edge(Renderable):
             b_x2, b_y2 = unit_to_px(b_x2, b_y2, resolution=length)
             order = 1
             offset = self.offset()
-
+        if self.rounded:
+            b_x1 += unit_to_px(-1, resolution=length)[0]
+            b_x2 += unit_to_px(1, resolution=length)[0]
         dist, offset = unit_to_px(2, offset, resolution=length)
         for x in range(b_x1, b_x2+1):
             for v_y in range(-dist, dist+1):
