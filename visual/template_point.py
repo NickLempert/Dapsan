@@ -20,6 +20,11 @@ class TemplatePoint(Point):
         self.background = background
         self.background_rotation = background_rotation
 
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value)
+        self.transforms[XShift].amount = self.x
+        self.transforms[YShift].amount = self.y
+
     def get_shape(self, shape: Type[Shape] | Shape):
         if isinstance(shape, Shape):
             shape2 = copy.deepcopy(shape)

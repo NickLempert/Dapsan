@@ -1,6 +1,7 @@
 import copy
 from abc import abstractmethod
 
+from shared_utility import deepcopy_args
 from visual.template_point import TemplatePoint
 
 
@@ -13,8 +14,9 @@ class Switch:
         return self.do_switch(self.target_point)
 
     @abstractmethod
+    @deepcopy_args()
     def do_switch(self, point: TemplatePoint):
-        return copy.deepcopy(point)
+        return point
 
     def is_point_targeted(self, point: TemplatePoint):
         return point is self.target_point

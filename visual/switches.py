@@ -2,6 +2,7 @@ import copy
 import math
 import random
 
+from shared_utility import deepcopy_args
 from visual.AssemblyTemplate import AssemblyTemplate
 from visual.Switch import Switch
 from visual.template_point import TemplatePoint
@@ -16,6 +17,7 @@ class Redirect(Switch):
             redirect_towards = assembly_template.get_random_point(exclude=[target_point])
         self.redirect_towards = redirect_towards
 
+    # @deepcopy_args()
     def do_switch(self, point: TemplatePoint):
         return copy.deepcopy(self.redirect_towards)
 
@@ -27,15 +29,17 @@ class Redirect(Switch):
 
 
 class RedirectKeepRotation(Redirect):
+    @deepcopy_args()
     def do_switch(self, point: TemplatePoint):
-        out = copy.deepcopy(self.redirect_towards)
+        out = self.redirect_towards
         out.transforms[Rotation] = self.target_point.transforms[Rotation]
         return out
 
 
 class CopyRotation(Redirect):
+    @deepcopy_args()
     def do_switch(self, point: TemplatePoint):
-        out = copy.deepcopy(self.target_point)
+        out = self.target_point
         out.transforms[Rotation] = self.redirect_towards.transforms[Rotation]
         return out
 
@@ -44,8 +48,9 @@ class CopyRotation(Redirect):
 
 
 class RedirectKeepScale(Redirect):
+    @deepcopy_args()
     def do_switch(self, point: TemplatePoint):
-        out = copy.deepcopy(self.redirect_towards)
+        out = self.redirect_towards
         out.transforms[Scale] = self.target_point.transforms[Scale]
         return out
 

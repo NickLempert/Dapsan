@@ -104,9 +104,9 @@ def test6():
 
 
 if __name__ == '__main__':
-    test1().show()
-    test2().show()
-    test3().show()
-    test4().show()
-    test5().show()
+    # test1().show()
+    # test2().show()
+    # test3().show()
+    # test4().show()
+    # test5().show()
     test6()

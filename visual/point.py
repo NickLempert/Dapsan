@@ -18,24 +18,16 @@ class Point:
                 return self.x
             case 'Y':
                 return self.y
-
         raise KeyError(f"{item} is not a property of Point.")
 
     def __setitem__(self, key, value):
         match key:
-            case 0:
+            case 0 | 'x' | 'X':
                 self.x = value
-            case 1:
+            case 1 | 'y' | 'Y':
                 self.y = value
-            case 'x':
-                self.x = value
-            case 'y':
-                self.y = value
-            case 'X':
-                self.x = value
-            case 'Y':
-                self.y = value
-        raise KeyError(f"{key} is not a property of Point.")
+            case _:
+                raise KeyError(f"{key} is not a property of Point.")
 
     def __iter__(self):
         yield self.x
