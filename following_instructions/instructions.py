@@ -2,7 +2,7 @@ import random
 from abc import abstractmethod
 from typing import Type, Sequence
 
-from following_instructions.products import Product, Number, Word, Digit
+from following_instructions.products import Product, Number, Word, Digit, WordCollection
 from following_instructions.utils import multiple_choice
 
 
@@ -70,19 +70,20 @@ class GetWordWithLetterCount(Instruction):
 
     def __init__(self):
         super().__init__()
-        self.words = [Word.generate() for _ in range(5)]
+        self.word_collection = WordCollection.generate()
 
     def __call__(self, product: Word):
-        return list(filter(lambda word: len(word) == product.get_weight(), self.words))[0]
+        return self.word_collection.get_matching_word(lambda word: len(word) == product.get_weight())
 
     def __str__(self):
-        return f'given the words:\n {multiple_choice(list(map(str, self.words)))}\n' \
+        return f'given the words:\n {self.word_collection.get_multiple_choice()}\n' \
                f'Take the first word where the length is'
 
     def supports_input_product(self, product: Product):
         # print(product, self.words)
         # print(super().supports_input_product(product) and (product.get_weight() in map(len, self.words)))
-        return super().supports_input_product(product) and (product.get_weight() in map(len, self.words))
+        return super().supports_input_product(product) \
+               and self.word_collection.find_matching_word(lambda word: len(word) == product.get_weight()) != -1
 
     def difficulty_for_product(self, product: Number):
         return int(product.get_weight()) / 3
@@ -92,10 +93,10 @@ class SelectWordWithLetterCount(GetWordWithLetterCount):
     output_product = Digit
 
     def __call__(self, product: Word):
-        return list(map(lambda word: len(word) == product.get_weight(), self.words)).index(True) + 1
+        return self.word_collection.find_matching_word(lambda word: len(word) == product.get_weight()) + 1
 
     def __str__(self):
-        return f'given the words:\n {multiple_choice(list(map(str, self.words)))}\n' \
+        return f'given the words:\n {self.word_collection.get_multiple_choice()}\n' \
                f'Take the digit before the first word where the length is'
 
 
@@ -113,28 +114,22 @@ class FirstLetterIndex(Instruction):
         return 'return the place in the alphabet of the first letter of'
 
 
-class FirstLetterIndexMatches(Instruction):
+class FirstLetterIndexMatches(GetWordWithLetterCount):
     input_products = [Digit, Number]
     output_product = Digit
 
-    def __init__(self):
-        super().__init__()
-        self.words = [Word.generate() for _ in range(5)]
-
     def __call__(self, product: Number):
-        matching = list(map(lambda word: ord(word.text[0]) - ord('a') + 1 == product.get_weight(), self.words))
-        if any(matching):
-            return Number(matching.index(True) + 1)
-        return Number(-1)
+        return Number(self.word_collection
+                      .find_matching_word(lambda word: ord(word.text[0]) - ord('a') + 1 == product.get_weight())+1)
 
     def difficulty_for_product(self, product: Number):
         return (int(product.text) + 14) / 15
 
     def supports_input_product(self, product: Number):
-        return super().supports_input_product(product) and self(product).text != '-1'
+        return super().supports_input_product(product) and self(product).text != '0'
 
     def __str__(self):
-        return f'given the words:\n {multiple_choice(list(map(str, self.words)))}\n' \
+        return f'given the words:\n {self.word_collection.get_multiple_choice()}\n' \
                f'Take the digit before word with the first letter matching'
 
 

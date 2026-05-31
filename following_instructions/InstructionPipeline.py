@@ -64,7 +64,7 @@ class InstructionPipeline:
 
 
 if __name__ == '__main__':
-    test_p = InstructionPipeline.generate()
+    test_p = InstructionPipeline.generate(10)
     print(' '.join(chr(i+ord('A')) for i in range(26)))
     print()
     print(test_p)
