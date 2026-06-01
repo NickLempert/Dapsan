@@ -2,7 +2,7 @@ import random
 from abc import abstractmethod
 from typing import Type, Sequence
 
-from following_instructions.products import Product, Number, Word, Digit, WordCollection
+from following_instructions.products import Product, Number, Word, Digit, WordCollection, Property, WordProperty
 from following_instructions.utils import multiple_choice
 
 
@@ -17,7 +17,7 @@ class Instruction:
         return Product(product.text)
 
     def __str__(self):
-        return 'do nothing'
+        return 'do nothing to'
 
     @abstractmethod
     def difficulty_for_product(self, product: Product):
@@ -41,7 +41,7 @@ class CountLetters(Instruction):
         return len(product.text) / 5
 
     def __str__(self):
-        return f'count letters in'
+        return f'count the letters in'
 
 
 class CountDigits(Instruction):
@@ -55,7 +55,7 @@ class CountDigits(Instruction):
         return Number(len(product))
 
     def __str__(self):
-        return f'count digits in'
+        return f'count the digits in'
 
     def difficulty_for_product(self, product: Product):
         return len(product.text) / 4
@@ -93,7 +93,7 @@ class SelectWordWithLetterCount(GetWordWithLetterCount):
     output_product = Digit
 
     def __call__(self, product: Word):
-        return self.word_collection.find_matching_word(lambda word: len(word) == product.get_weight()) + 1
+        return Number(self.word_collection.find_matching_word(lambda word: len(word) == product.get_weight()) + 1)
 
     def __str__(self):
         return f'given the words:\n {self.word_collection.get_multiple_choice()}\n' \
@@ -105,10 +105,10 @@ class FirstLetterIndex(Instruction):
     output_product = Number
 
     def __call__(self, product: Word):
-        return ord(product.text[0].lower()) - ord('a') + 1
+        return Number(ord(product.text[0].lower()) - ord('a') + 1)
 
     def difficulty_for_product(self, product: Word):
-        return (self(product) + 14) / 15
+        return (int(self(product).text) + 14) / 15
 
     def __str__(self):
         return 'return the place in the alphabet of the first letter of'
@@ -133,11 +133,33 @@ class FirstLetterIndexMatches(GetWordWithLetterCount):
                f'Take the digit before word with the first letter matching'
 
 
+class MatchesWordProperty(Instruction):
+
+    input_products = [WordProperty]
+    output_product = Word
+
+    def __init__(self):
+        super().__init__()
+        self.word_collection = WordCollection.generate()
+
+    def __str__(self):
+        return f'given the words:\n {self.word_collection.get_multiple_choice()}\n'\
+               f'Take the word that is'
+
+    def supports_input_product(self, product: Product):
+        return super().supports_input_product(product)
+
+    def difficulty_for_product(self, product: Property):
+        return abs(sum(map(product, self.word_collection))/len(self.word_collection)
+                   - product(product.get_product_from(self.word_collection)))
+
+
 INSTRUCTIONS = [
     CountDigits,
     CountLetters,
     GetWordWithLetterCount,
     SelectWordWithLetterCount,
     FirstLetterIndex,
-    FirstLetterIndexMatches
+    FirstLetterIndexMatches,
+    MatchesWordProperty,
 ]

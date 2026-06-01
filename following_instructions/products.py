@@ -9,6 +9,8 @@ from following_instructions.utils import multiple_choice
 class Product:
     name = 'product'
     difficulty_limit = 2.0
+    auto_reveal = True
+    refer_by_name = True
 
     def __init__(self, val: str = ''):
         self.text = val
@@ -25,6 +27,12 @@ class Product:
 
     def get_weight(self):
         return len(self)
+
+    def get_alphabetical_order(self):
+        out = 0
+        for index, order in enumerate(map(ord, self.text)):
+            out += order / 10 ** index
+        return out
 
 
 class Text(Product):
@@ -51,6 +59,9 @@ class WordCollection(Text):
         text = text.replace(',', '').replace('.', '').replace('!', '').replace('?', '')
         super().__init__(text)
 
+    def __len__(self):
+        return len(self.get_words())
+
     def get_words(self):
         if self.words is None or self.last_text_update != self.text:
             self.words = list(map(Word, self.text.split()))
@@ -76,6 +87,9 @@ class WordCollection(Text):
                 return index
         return -1
 
+    def __iter__(self):
+        return self.get_words().__iter__()
+
 
 class Sentence(WordCollection):
     @staticmethod
@@ -90,9 +104,11 @@ class Number(Product):
         super().__init__(str(val))
 
     @staticmethod
-    def generate(difficulty: float = 1.0):
-        min_num = int('1'+'0'*math.ceil(difficulty*5-1))
-        max_num = int('9'*math.ceil(difficulty*5))
+    def generate(difficulty: float | None = None):
+        if difficulty is None:
+            difficulty = random.uniform(0.2, 2)
+        min_num = int('1' + '0' * math.ceil(difficulty * 5 - 1))
+        max_num = int('9' * math.ceil(difficulty * 5))
         return Number(random.randint(min_num, max_num))
 
     def get_weight(self):
@@ -107,8 +123,45 @@ class Digit(Number):
         return Digit(random.randint(0, 9))
 
 
-PRODUCTS = [Word, Number, Digit, Sentence]
+class Property(Product):
+    names = {'biggest': Product.get_weight,
+             'smallest': Product.get_weight,
+             'longest': len,
+             'shortest': lambda product: -len(product),
+             }
+    name = 'property'
+    auto_reveal = False
+    refer_by_name = False
 
+    def __init__(self, text: str = ''):
+        super().__init__(text)
+
+    def __call__(self, product: Product):
+        # if self.names.get(self.text).__code__.co_argcount > 1:
+        #     return self.names.get(self.text)(product, full_list)
+        return self.names.get(self.text)(product)
+
+    def get_product_from(self, products: Sequence[Product]):
+        return max(products, key=self.names.get(self.text))
+
+    @staticmethod
+    def generate(difficulty: float = 1.0):
+        return Property(random.choice(tuple(Property.names.keys())))
+
+
+class WordProperty(Property):
+    names = Property.names.copy()
+    names.update({
+        'first alphabetically': Product.get_alphabetical_order,
+        'last alphabetically': lambda product: -product.get_alphabetical_order(),
+    })
+
+    @staticmethod
+    def generate(difficulty: float = 1.0):
+        return WordProperty(random.choice(list(WordProperty.names.keys())))
+
+
+PRODUCTS = [Word, Number, Digit, Sentence, Property, WordProperty]
 
 if __name__ == '__main__':
     print(Product.generate())

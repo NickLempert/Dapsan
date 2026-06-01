@@ -55,12 +55,15 @@ class InstructionPipeline:
         return out_pipeline
 
     def string_without_first_product(self, end_chain=False):
-        return f'{self.instruction} the resulting {self.first_product.name}.\n' \
+        return f'{self.instruction} the {"resulting " if self.first_product.auto_reveal else ""}' \
+               f'{self.first_product.name if self.first_product.refer_by_name else self.first_product}.\n' \
                f'{"" if end_chain or self.next is None else self.next.string_without_first_product()}'
 
-    def __str__(self):
+    def __str__(self, end_chain=False):
+        if not self.first_product.auto_reveal:
+            return self.string_without_first_product()
         return f'Given the {self.first_product.name}: {self.first_product.text}\n\n' \
-               + self.string_without_first_product()
+               + self.string_without_first_product(end_chain)
 
 
 if __name__ == '__main__':
