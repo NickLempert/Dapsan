@@ -62,11 +62,14 @@ class InstructionPipeline:
     def __str__(self, end_chain=False):
         if not self.first_product.auto_reveal:
             return self.string_without_first_product()
-        return f'Given the {self.first_product.name}: {self.first_product.text}\n\n' \
+        return f'Given the {self.first_product.name}: {self.first_product.text}\n' \
                + self.string_without_first_product(end_chain)
 
 
 if __name__ == '__main__':
+    seed = random.randint(0, 9999999)
+    random.seed(seed)
+    print(seed)
     test_p = InstructionPipeline.generate(10)
     print(' '.join(chr(i+ord('A')) for i in range(26)))
     print()

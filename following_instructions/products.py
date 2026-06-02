@@ -39,6 +39,51 @@ class Text(Product):
     name = 'text'
 
 
+class ProductCollection(Text):
+    product_type = Product
+
+    def __init__(self, text: str | Sequence[str] | Sequence[Product]):
+        self.products = None
+        if isinstance(text, Sequence):
+            self.products = text
+            if len(text) > 0 and isinstance(text[0], str):
+                self.products = list(map(self.product_type, text))
+            text = ' '.join(map(str, text))
+            self.last_text_update = text
+        super().__init__(text)
+
+    def __len__(self):
+        return len(self.get_products())
+
+    def get_products(self):
+        if self.products is None or self.last_text_update != self.text:
+            self.products = list(map(self.product_type, self.text.split()))
+            self.last_text_update = self.text
+        return self.products
+
+    @staticmethod
+    def generate(difficulty: float = 1.0):
+        return ProductCollection([Product(get_random_word()) for _ in range(5)])
+
+    def get_multiple_choice(self):
+        return multiple_choice(list(map(str, self.get_products())))
+
+    def get_matching_product(self, check_product: Callable):
+        for product in self.get_products():
+            if check_product(product):
+                return product
+        return ''
+
+    def find_matching_product(self, check_product: Callable):
+        for index, product in enumerate(self.get_products()):
+            if check_product(product):
+                return index
+        return -1
+
+    def __iter__(self):
+        return self.get_products().__iter__()
+
+
 class Word(Text):
     name = 'word'
 
@@ -47,48 +92,16 @@ class Word(Text):
         return Word(get_random_word())
 
 
-class WordCollection(Text):
-    def __init__(self, text: str | Sequence[str] | Sequence[Word]):
-        self.words = None
-        if isinstance(text, Sequence):
-            self.words = text
-            if len(text) > 0 and isinstance(text[0], str):
-                self.words = list(map(Word, text))
-            text = ' '.join(map(str, text))
-            self.last_text_update = text
-        text = text.replace(',', '').replace('.', '').replace('!', '').replace('?', '')
+class WordCollection(ProductCollection):
+    product_type = Word
+
+    def __init__(self, text: str | Sequence[str | Word]):
         super().__init__(text)
-
-    def __len__(self):
-        return len(self.get_words())
-
-    def get_words(self):
-        if self.words is None or self.last_text_update != self.text:
-            self.words = list(map(Word, self.text.split()))
-            self.last_text_update = self.text
-        return self.words
+        self.text = self.text.replace(',', '').replace('.', '').replace('!', '').replace('?', '')
 
     @staticmethod
     def generate(difficulty: float = 1.0):
-        return WordCollection([Word(get_random_word()) for _ in range(5)])
-
-    def get_multiple_choice(self):
-        return multiple_choice(list(map(str, self.get_words())))
-
-    def get_matching_word(self, check_word: Callable):
-        for word in self.get_words():
-            if check_word(word):
-                return word
-        return ''
-
-    def find_matching_word(self, check_word: Callable):
-        for index, word in enumerate(self.get_words()):
-            if check_word(word):
-                return index
-        return -1
-
-    def __iter__(self):
-        return self.get_words().__iter__()
+        return WordCollection([Word.generate(difficulty) for _ in range(5)])
 
 
 class Sentence(WordCollection):
@@ -123,9 +136,20 @@ class Digit(Number):
         return Digit(random.randint(0, 9))
 
 
+class NumberCollection(ProductCollection):
+    product_type = Number
+
+    def __init__(self, text: str | Sequence[int | Number]):
+        super().__init__(text)
+
+    @staticmethod
+    def generate(difficulty: float | None = None):
+        return NumberCollection([Number.generate(difficulty) for _ in range(4)])
+
+
 class Property(Product):
     names = {'biggest': Product.get_weight,
-             'smallest': Product.get_weight,
+             'smallest': lambda product: -product.get_weight(),
              'longest': len,
              'shortest': lambda product: -len(product),
              }

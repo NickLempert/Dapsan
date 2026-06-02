@@ -73,7 +73,7 @@ class GetWordWithLetterCount(Instruction):
         self.word_collection = WordCollection.generate()
 
     def __call__(self, product: Word):
-        return self.word_collection.get_matching_word(lambda word: len(word) == product.get_weight())
+        return self.word_collection.get_matching_product(lambda word: len(word) == product.get_weight())
 
     def __str__(self):
         return f'given the words:\n {self.word_collection.get_multiple_choice()}\n' \
@@ -83,17 +83,17 @@ class GetWordWithLetterCount(Instruction):
         # print(product, self.words)
         # print(super().supports_input_product(product) and (product.get_weight() in map(len, self.words)))
         return super().supports_input_product(product) \
-               and self.word_collection.find_matching_word(lambda word: len(word) == product.get_weight()) != -1
+               and self.word_collection.find_matching_product(lambda word: len(word) == product.get_weight()) != -1
 
     def difficulty_for_product(self, product: Number):
-        return int(product.get_weight()) / 3
+        return (int(product.get_weight())+2) / 3
 
 
 class SelectWordWithLetterCount(GetWordWithLetterCount):
     output_product = Digit
 
     def __call__(self, product: Word):
-        return Number(self.word_collection.find_matching_word(lambda word: len(word) == product.get_weight()) + 1)
+        return Number(self.word_collection.find_matching_product(lambda word: len(word) == product.get_weight()) + 1)
 
     def __str__(self):
         return f'given the words:\n {self.word_collection.get_multiple_choice()}\n' \
@@ -120,7 +120,7 @@ class FirstLetterIndexMatches(GetWordWithLetterCount):
 
     def __call__(self, product: Number):
         return Number(self.word_collection
-                      .find_matching_word(lambda word: ord(word.text[0]) - ord('a') + 1 == product.get_weight())+1)
+                      .find_matching_product(lambda word: ord(word.text[0]) - ord('a') + 1 == product.get_weight())+1)
 
     def difficulty_for_product(self, product: Number):
         return (int(product.text) + 14) / 15
@@ -133,7 +133,7 @@ class FirstLetterIndexMatches(GetWordWithLetterCount):
                f'Take the digit before word with the first letter matching'
 
 
-class MatchesWordProperty(Instruction):
+class BestMatchesWordProperty(Instruction):
 
     input_products = [WordProperty]
     output_product = Word
@@ -142,16 +142,17 @@ class MatchesWordProperty(Instruction):
         super().__init__()
         self.word_collection = WordCollection.generate()
 
+    def __call__(self, product: WordProperty):
+        return product.get_product_from(self.word_collection.get_products())
+
     def __str__(self):
         return f'given the words:\n {self.word_collection.get_multiple_choice()}\n'\
                f'Take the word that is'
 
-    def supports_input_product(self, product: Product):
-        return super().supports_input_product(product)
-
     def difficulty_for_product(self, product: Property):
-        return abs(sum(map(product, self.word_collection))/len(self.word_collection)
-                   - product(product.get_product_from(self.word_collection)))
+        avg_value = sum(map(product, self.word_collection))/len(self.word_collection)
+        max_value = product(product.get_product_from(self.word_collection))
+        return abs(avg_value-max_value)/(avg_value+max_value)*30
 
 
 INSTRUCTIONS = [
@@ -161,5 +162,5 @@ INSTRUCTIONS = [
     SelectWordWithLetterCount,
     FirstLetterIndex,
     FirstLetterIndexMatches,
-    MatchesWordProperty,
+    BestMatchesWordProperty,
 ]
