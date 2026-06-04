@@ -31,3 +31,8 @@ def deepcopy_args(positions: None | int | Sequence[int] = None, deepcopy_kwargs:
             return func(*new_args, **kwargs)
         return _helper2_
     return _helper_
+
+
+def false_if_any_none(func: Callable):
+    return lambda *args, **kwargs: (False if any(map(lambda x: x is None, args)) else func(*args, **kwargs))
+

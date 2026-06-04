@@ -94,9 +94,11 @@ def test6():
         TemplatePoint(Transforms(x_shift=UNITS_PER_IMAGE/2-UNITS_PER_IMAGE/4, scale=0.75)),
         TemplatePoint(Transforms(x_shift=UNITS_PER_IMAGE/2+UNITS_PER_IMAGE/4, scale=0.75)),
     ])
-    switch_set = [switches.Redirect(template.points[0], template), switches.Redirect(template.points[1], template)]
+    switch_set = [switches.Redirect(template.points[0], template),
+                  switches.Redirect(template.points[1], template),
+                  switches.RotateBackground(template.points[1], template)]
     template.switch_sets.append(switch_set)
-    for assembly in template.assemble():
+    for assembly in template.assemble().assemblies:
         img = Image.new('RGB', (500, 500), (255, 255, 255))
         img = render(img, assembly)
         img.show()
@@ -122,10 +124,10 @@ def test7():
 
 
 if __name__ == '__main__':
-    test1().show()
-    test2().show()
-    test3().show()
-    test4().show()
-    test5().show()
+    # test1().show()
+    # test2().show()
+    # test3().show()
+    # test4().show()
+    # test5().show()
     test6()
     # test7().show()

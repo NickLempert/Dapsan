@@ -1,11 +1,15 @@
 import copy
 from abc import abstractmethod
 
-from shared_utility import deepcopy_args
+from shared_utility import deepcopy_args, false_if_any_none
+from visual.shapes import Shape
 from visual.template_point import TemplatePoint
 
 
 class Switch:
+
+    ITERATIVE = False
+
     def __init__(self, target_point: TemplatePoint, assembly_template):
         self.target_point = target_point
         self.assembly_template = assembly_template
@@ -29,7 +33,8 @@ class Switch:
         """
         return point is self.target_point
 
-    def is_fair(self):
+    @false_if_any_none
+    def is_fair(self, shape: Shape):
         """
         Returns whether the effects of the switch are clear.
         """

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import random
 from typing import Sequence, Iterator
 
@@ -17,14 +18,27 @@ class AssemblyTemplate:
             switch_sets = []
         self.switch_sets: list[list[Switch]] = list(switch_sets)
 
+    @staticmethod
+    def generate():
+        for _ in range(3):
+            pass
+        return AssemblyTemplate([])
+
     def get_random_point(self, exclude: list[TemplatePoint]):
         return choose_one(self.points, exclude)
 
-    def assemble(self) -> Iterator[Assembly]:
+    def assemble(self) -> TemplateImplementation:
+        valid = True
         shapes = [[]] + [[] for _ in range(len(self.switch_sets))]
         for point in self.points:
             if point.active:
-                shape = autogenerate_shape()
+                shape = None
+                for _ in range(1000):
+                    if all(map(lambda switches: all(map(lambda s: s.is_fair(shape), switches)), self.switch_sets)):
+                        break
+                    shape = autogenerate_shape()
+                else:
+                    valid = False
                 shapes[0].append(point.get_shape(shape))
                 final_point = point
                 for switch_set in range(len(self.switch_sets)):
@@ -32,4 +46,14 @@ class AssemblyTemplate:
                         if switch.is_point_targeted(point):
                             final_point = switch.do_switch(final_point)
                     shapes[switch_set+1].append(final_point.get_shape(shape))
-        return map(Assembly, shapes)
+        return TemplateImplementation(tuple(map(Assembly, shapes)), valid)
+
+
+class TemplateImplementation:
+    def __init__(self, assemblies: Sequence[Assembly], valid: bool):
+        self.assemblies = assemblies
+        self.valid = valid
+
+    def __iter__(self):
+        return self.assemblies.__iter__()
+
