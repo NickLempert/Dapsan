@@ -2,7 +2,7 @@ import copy
 import math
 import random
 
-from shared_utility import deepcopy_args, false_if_any_none
+from shared_utility import deepcopy_args, false_if_any_none, choose_one
 from visual.AssemblyTemplate import AssemblyTemplate
 from visual.Switch import Switch
 from visual.shapes import Shape
@@ -64,7 +64,7 @@ class RotateBackground(Switch):
     def __init__(self, target_point: TemplatePoint, assembly_template, amount: float | None = None):
         super().__init__(target_point, assembly_template)
         if amount is None:
-            amount = random.choice(Rotation.increments)
+            amount = choose_one(Rotation.increments, exclude=(30, -30, 180, -180))
         self.amount = amount
 
     @deepcopy_args()

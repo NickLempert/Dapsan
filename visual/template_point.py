@@ -4,7 +4,8 @@ from typing import Type
 from visual.effects import Effect
 from visual.point import Point
 from visual.shapes import Shape
-from visual.transforms import Transforms, XShift, YShift, Rotation
+from visual.transforms import Transforms, XShift, YShift, Rotation, Scale
+from visual.util import IMAGE_THIRD
 
 
 class TemplatePoint(Point):
@@ -37,3 +38,6 @@ class TemplatePoint(Point):
                 shape2.background_rotation = self.background_rotation
             return shape2
         return shape(transforms=self.transforms)
+
+    def get_radius(self):
+        return self.transforms[Scale].amount*IMAGE_THIRD

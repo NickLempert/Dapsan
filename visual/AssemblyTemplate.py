@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import math
 import random
 from typing import Sequence, Iterator
 
@@ -8,7 +10,8 @@ from visual.effects import EDGE_EFFECTS, AUTO_EFFECTS
 from visual.shapes import DEFAULT_SHAPES, Mesh, Shape, autogenerate_shape
 from visual.Switch import Switch
 from visual.template_point import TemplatePoint
-from visual.transforms import Rotation
+from visual.transforms import Rotation, Scale, Transforms
+from visual.util import IMAGE_FIFTH, get_angle, from_angle, IMAGE_THIRD, UNITS_PER_IMAGE, IMAGE_HALF
 
 
 class AssemblyTemplate:
@@ -20,9 +23,56 @@ class AssemblyTemplate:
 
     @staticmethod
     def generate():
-        for _ in range(3):
-            pass
-        return AssemblyTemplate([])
+        points = []
+        for x, y in autogenerate_shape().to_mesh().vertices:
+            x += IMAGE_HALF
+            y += IMAGE_HALF
+            if random.random() < 0.2:
+                x += random.randint(-UNITS_PER_IMAGE, UNITS_PER_IMAGE)
+                y += random.randint(-UNITS_PER_IMAGE, UNITS_PER_IMAGE)
+            points.append(TemplatePoint(Transforms(x, y)))
+        points = random.choices(points, [1]*len(points), k=5)
+        solved = False
+        while not solved:
+            print(*map(str, points))
+            solved = True
+            for point in points:
+                for other in points:
+                    if other is point:
+                        continue
+                    min_distance = point.get_radius()+other.get_radius()
+                    if math.dist(point, other) <= min_distance:
+                        solved = False
+                        match random.randint(0, 1):
+                            case 0:
+                                angle = get_angle(point['x']-other['x'], point['y']-other['y'])
+                                direction = from_angle(angle, min_distance)
+                                point['x'] -= direction[0]
+                                point['y'] -= direction[1]
+                            case 1:
+                                point.transforms[Scale].amount *= random.random()
+                if not point.get_radius() <= point.x <= UNITS_PER_IMAGE-point.get_radius() or \
+                   not point.get_radius() <= point.y <= UNITS_PER_IMAGE-point.get_radius():
+                    solved = False
+                    match random.randint(0, 1):
+                        case 0:
+                            angle = get_angle(point['x'], point['y'])
+                            direction = from_angle(angle, math.dist((IMAGE_HALF, IMAGE_HALF), point)*random.random())
+                            point['x'] -= direction[0]
+                            point['y'] -= direction[1]
+                        case 1:
+                            point.transforms[Scale].amount *= random.random()
+                if point.transforms[Scale].amount < 0.2:
+                    solved = False
+                    point.transforms[Scale].amount += 0.2
+        for point in points[:]:
+            for other in points:
+                if other is point:
+                    continue
+                if math.dist(point, other) < 2:
+                    points.remove(point)
+                    break
+        return AssemblyTemplate(points)
 
     def get_random_point(self, exclude: list[TemplatePoint]):
         return choose_one(self.points, exclude)
@@ -32,7 +82,7 @@ class AssemblyTemplate:
         shapes = [[]] + [[] for _ in range(len(self.switch_sets))]
         for point in self.points:
             if point.active:
-                shape = None
+                shape = autogenerate_shape()
                 for _ in range(1000):
                     if all(map(lambda switches: all(map(lambda s: s.is_fair(shape), switches)), self.switch_sets)):
                         break

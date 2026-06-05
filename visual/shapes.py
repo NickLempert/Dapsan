@@ -10,7 +10,7 @@ from visual.edge import Edge
 from visual.effects import Effect, Solid, Lined, Empty, EDGE_EFFECTS, AUTO_EFFECTS
 from visual.renderable import Renderable, expand4
 from visual.transforms import XShift, YShift, Rotation, Transforms, Scale
-from visual.util import unit_to_px, px_to_unit, UNITS_PER_IMAGE, sign, get_angle
+from visual.util import unit_to_px, px_to_unit, UNITS_PER_IMAGE, sign, get_angle, IMAGE_THIRD
 from visual.point import Point
 
 
@@ -203,7 +203,7 @@ class Mesh(Shape):
 
 
 class Circle(Shape):
-    default_radius = UNITS_PER_IMAGE / 3
+    default_radius = IMAGE_THIRD
 
     def __init__(self,
                  edge_type: Type[Effect] = Lined,
@@ -252,6 +252,8 @@ class Circle(Shape):
                                   resolution=resolution[0])
         for y in range(mi_y, ma_y):
             local_y = y - off_y
+            if abs(radius) < abs(local_y):
+                continue
             local_x = round((radius ** 2 - local_y ** 2) ** 0.5)
             local_y += off_y
             for dist in range(0, radius + 1):

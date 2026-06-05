@@ -1,6 +1,9 @@
 import math
 
 UNITS_PER_IMAGE = 35
+IMAGE_FIFTH = UNITS_PER_IMAGE / 5
+IMAGE_THIRD = UNITS_PER_IMAGE / 3
+IMAGE_HALF = UNITS_PER_IMAGE / 2
 
 
 def px_to_unit(*vals, resolution):
