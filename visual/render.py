@@ -125,9 +125,9 @@ def test7():
 
 def test8():
     template = AssemblyTemplate.generate()
-    switch_set = [switches.Redirect(template.points[0], template),
-                  switches.Redirect(template.points[1], template),
-                  switches.RotateBackground(template.points[1], template)]
+    # switch_set = [switches.Redirect(template.points[0], template),
+                  # switches.Redirect(template.points[1], template),
+                  # switches.RotateBackground(template.points[1], template)]
     # template.switch_sets.append(switch_set)
     for assembly in template.assemble().assemblies:
         img = Image.new('RGB', (500, 500), (255, 255, 255))
@@ -137,13 +137,13 @@ def test8():
 
 
 if __name__ == '__main__':
-    test1().show()
-    test2().show()
-    test3().show()
-    test4().show()
-    test5().show()
-    for test_img in test6():
-        test_img.show()
+    # test1().show()
+    # test2().show()
+    # test3().show()
+    # test4().show()
+    # test5().show()
+    # for test_img in test6():
+    #     test_img.show()
     # test7().show()
     for test_img in test8():
         test_img.show()

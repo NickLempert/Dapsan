@@ -14,6 +14,94 @@ from visual.transforms import Rotation, Scale, Transforms
 from visual.util import IMAGE_FIFTH, get_angle, from_angle, IMAGE_THIRD, UNITS_PER_IMAGE, IMAGE_HALF
 
 
+def move_relative(point, other, distance: float):
+    angle = get_angle(point['x'] - other['x'], point['y'] - other['y'])
+    direction = from_angle(angle, distance)
+    point['x'] -= direction[0]
+    point['y'] -= direction[1]
+    return point
+
+
+def solve(points: list[TemplatePoint], ignore_scale=False):
+    solved = False
+    delete_countdown = 1000
+    while not solved:
+        solved = True
+        for point in points:
+            for other in points:
+                if other is point:
+                    continue
+                min_distance = point.get_radius() + other.get_radius()
+                if math.dist(point, other) <= min_distance:
+                    solved = False
+                    match random.randint(0, 6)+int(ignore_scale):
+                        case 0:
+                            point.transforms[Scale].amount *= random.random() ** 0.25
+                        case _:
+                            move_relative(point, other, min_distance+0.5)
+            if not point.get_radius() <= point.x <= UNITS_PER_IMAGE - point.get_radius() or \
+                    not point.get_radius() <= point.y <= UNITS_PER_IMAGE - point.get_radius():
+                solved = False
+                match random.randint(0, 6)+int(ignore_scale):
+                    case 0:
+                        point.transforms[Scale].amount *= random.random() ** 0.25
+                    case _:
+                        angle = get_angle(point['x'], point['y'])
+                        direction = from_angle(angle, math.dist((IMAGE_HALF, IMAGE_HALF), point))
+                        point['x'] -= direction[0] * random.random()
+                        point['y'] -= direction[1] * random.random()
+            if point.transforms[Scale].amount < 0.2:
+                solved = False
+                point.transforms[Scale].amount += 0.2
+        # print(delete_countdown, points, points[0].transforms[Scale].amount, points[0].x, points[0].y)
+        delete_countdown -= 1
+        if delete_countdown < 0 and not solved:
+            delete_countdown = 1000
+            if len(points) > 1:
+                points = points[:len(points) - 1]
+    return points
+
+
+def compress(points: list[TemplatePoint]):
+    pivot = random.choice(points)
+    for point in points:
+        if point is pivot:
+            continue
+        min_distance = point.get_radius() + pivot.get_radius()
+        move_relative(point, pivot, (math.dist(point, pivot)-min_distance)-1)
+    return solve(points, True)
+
+
+def center(points: list[TemplatePoint]):
+    center_of_mass = [sum(map(lambda p: p[axis], points)) / len(points) for axis in 'xy']
+    off_x = IMAGE_HALF-center_of_mass[0]
+    off_y = IMAGE_HALF-center_of_mass[1]
+    for point in points:
+        point['x'] += off_x
+        point['y'] += off_y
+    return points
+
+
+def fit(points: list[TemplatePoint]):
+    min_boundary_x = -IMAGE_HALF
+    max_boundary_x = UNITS_PER_IMAGE-IMAGE_HALF
+    min_boundary_y = -IMAGE_HALF
+    max_boundary_y = UNITS_PER_IMAGE-IMAGE_HALF
+    max_scale = float('inf')
+    for point in points:
+        p2 = point[0]-IMAGE_HALF, point[1]-IMAGE_HALF
+        max_scale_p_x = abs(min_boundary_x/(p2[0]-point.get_radius()-1))
+        max_scale_p_x = min(max_scale_p_x, abs(max_boundary_x/(p2[0]+point.get_radius()-1)))
+        max_scale_p_y = abs(min_boundary_y/(p2[1]-point.get_radius()+1))
+        max_scale_p_y = min(max_scale_p_y, abs(max_boundary_y/(p2[1]+point.get_radius()+1)))
+        max_scale = min((max_scale, max_scale_p_x, max_scale_p_y))
+    for point in points:
+        point['x'] = (point['x']-IMAGE_HALF)*max_scale+IMAGE_HALF
+        point['y'] = (point['y']-IMAGE_HALF)*max_scale+IMAGE_HALF
+        point.transforms[Scale].amount *= max_scale
+    return points
+
+
 class AssemblyTemplate:
     def __init__(self, points: Sequence[TemplatePoint], switch_sets: Sequence[list[Switch]] | None = None):
         self.points = list(points)
@@ -30,48 +118,12 @@ class AssemblyTemplate:
             if random.random() < 0.2:
                 x += random.randint(-UNITS_PER_IMAGE, UNITS_PER_IMAGE)
                 y += random.randint(-UNITS_PER_IMAGE, UNITS_PER_IMAGE)
-            points.append(TemplatePoint(Transforms(x, y)))
-        points = random.choices(points, [1]*len(points), k=5)
-        solved = False
-        while not solved:
-            print(*map(str, points))
-            solved = True
-            for point in points:
-                for other in points:
-                    if other is point:
-                        continue
-                    min_distance = point.get_radius()+other.get_radius()
-                    if math.dist(point, other) <= min_distance:
-                        solved = False
-                        match random.randint(0, 1):
-                            case 0:
-                                angle = get_angle(point['x']-other['x'], point['y']-other['y'])
-                                direction = from_angle(angle, min_distance)
-                                point['x'] -= direction[0]
-                                point['y'] -= direction[1]
-                            case 1:
-                                point.transforms[Scale].amount *= random.random()
-                if not point.get_radius() <= point.x <= UNITS_PER_IMAGE-point.get_radius() or \
-                   not point.get_radius() <= point.y <= UNITS_PER_IMAGE-point.get_radius():
-                    solved = False
-                    match random.randint(0, 1):
-                        case 0:
-                            angle = get_angle(point['x'], point['y'])
-                            direction = from_angle(angle, math.dist((IMAGE_HALF, IMAGE_HALF), point)*random.random())
-                            point['x'] -= direction[0]
-                            point['y'] -= direction[1]
-                        case 1:
-                            point.transforms[Scale].amount *= random.random()
-                if point.transforms[Scale].amount < 0.2:
-                    solved = False
-                    point.transforms[Scale].amount += 0.2
-        for point in points[:]:
-            for other in points:
-                if other is point:
-                    continue
-                if math.dist(point, other) < 2:
-                    points.remove(point)
-                    break
+            points.append(TemplatePoint(Transforms(x, y, random.uniform(0.4, 2))))
+        random.shuffle(points)
+        points = points[:max(random.randint(1, 5), random.randint(1, 4))]
+        steps = solve, compress, center, fit, solve
+        for step in steps:
+            points = step(points)
         return AssemblyTemplate(points)
 
     def get_random_point(self, exclude: list[TemplatePoint]):

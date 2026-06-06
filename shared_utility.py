@@ -4,7 +4,10 @@ from typing import Sequence, Callable
 
 
 def choose_one(values: Sequence, exclude: Sequence = ()):
-    return random.choices(values, [(0 if val in exclude else 1) for val in values])[0]
+    weights = [(0 if val in exclude else 1) for val in values]
+    if not any(weights):
+        return None
+    return random.choices(values, weights)[0]
 
 
 def deepcopy_args(positions: None | int | Sequence[int] = None, deepcopy_kwargs: bool | Sequence = False):
